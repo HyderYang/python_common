@@ -1,0 +1,10 @@
+database
+java
+python
+php
+rudy
+golang
+c++
+c
+c#
+javascript

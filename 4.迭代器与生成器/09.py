@@ -45,9 +45,3 @@ print('#' * 50)
 
 for c in combinations_with_replacement(items, 3):
     print(c)
-
-
-
-
-
-
