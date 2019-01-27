@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
-# 将多层迁到薛烈展开成一个单层嵌套
+# 将多层嵌套展开成一个单层嵌套
 # 可以写一个包含 yield from 语句递归器
 from collections import Iterable
 
@@ -43,6 +43,7 @@ def flatten(items, ignore_types=(str, bytes)):
                 yield i
         else:
             yield x
+
 
 """
 尽管只改了一点点，但是 yield from 语句看上去感觉更好，并且也使得代码更简洁清爽。
