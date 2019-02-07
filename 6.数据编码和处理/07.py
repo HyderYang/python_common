@@ -76,7 +76,7 @@ end <Element 'content' at 0x10110de68>
 end <Element 'top' at 0x10110dd60>
 >>>
 """
-print(elem) # This is the topmost element
+print(elem)  # This is the topmost element
 
 # 最后一点，如果你要处理的XML文本除了要使用到其他高级XML特性外，还要使用到命名空间，
 # 建议你最好是使用 lxml 函数库来代替 ElementTree 。 例如，lxml 对利用DTD验证文档、
