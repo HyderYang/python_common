@@ -95,7 +95,7 @@ class Node:
     # Only here to illustrate pathological behavior
     def __del__(self):
         del self.data
-        del.parent
+        del self.parent
 
 
 # 这种情况下，垃圾回收永远都不会去回收这个对象的，还会导致内存泄露。 如果你试着去运行它会发现，
@@ -103,14 +103,10 @@ class Node:
 a = Node()
 a.add_child(Node())
 del a  # No message (not collected)
-import gc
-
 gc.collect()  # No message (not collected)
 
 # 弱引用消除了引用循环的这个问题，本质来讲，弱引用就是一个对象指针，它不会增加它的引用计数。
 # 你可以通过 weakref 来创建弱引用。例如：
-import weakref
-
 a = Node()
 a_ref = weakref.ref(a)
 a_ref
