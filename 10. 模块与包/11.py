@@ -78,6 +78,7 @@ import imp
 import urllib.request
 import sys
 
+
 def load_module(url):
     u = urllib.request.urlopen(url)
     source = u.read().decode('utf-8')
@@ -88,6 +89,7 @@ def load_module(url):
     exec(code, mod.__dict__)
     return mod
 
+
 # 这个函数会下载源代码，并使用 compile() 将其编译到一个代码对象中， 然后在一个新创建的模块对象
 # 的字典中来执行它。下面是使用这个函数的方式：
 fib = load_module('http://localhost:15000/fib.py')
@@ -97,7 +99,6 @@ spam = load_module('http://localhost:15000/spam.py')
 spam.hello('Guido')
 print(fib)
 print(spam)
-
 
 # 正如你所见，对于简单的模块这个是行得通的。 不过它并没有嵌入到通常的import语句中，如果要支持更高
 # 级的结构比如包就需要更多的工作了。
@@ -113,7 +114,9 @@ from html.parser import HTMLParser
 
 # Debugging
 import logging
+
 log = logging.getLogger(__name__)
+
 
 # Get links from a given URL
 def _get_links(url):
@@ -122,6 +125,7 @@ def _get_links(url):
             if tag == 'a':
                 attrs = dict(attrs)
                 links.add(attrs.get('href').rstrip('/'))
+
     links = set()
     try:
         log.debug('Getting links from %s' % url)
@@ -133,11 +137,12 @@ def _get_links(url):
     log.debug('links: %r', links)
     return links
 
+
 class UrlMetaFinder(importlib.abc.MetaPathFinder):
     def __init__(self, baseurl):
         self._baseurl = baseurl
-        self._links = { }
-        self._loaders = { baseurl : UrlModuleLoader(baseurl) }
+        self._links = {}
+        self._loaders = {baseurl: UrlModuleLoader(baseurl)}
 
     def find_module(self, fullname, path=None):
         log.debug('find_module: fullname=%r, path=%r', fullname, path)
@@ -182,6 +187,7 @@ class UrlMetaFinder(importlib.abc.MetaPathFinder):
     def invalidate_caches(self):
         log.debug('invalidating link cache')
         self._links.clear()
+
 
 # Module Loader for a URL
 class UrlModuleLoader(importlib.abc.SourceLoader):
@@ -232,11 +238,12 @@ class UrlModuleLoader(importlib.abc.SourceLoader):
     def is_package(self, fullname):
         return False
 
+
 # Package loader for a URL
 class UrlPackageLoader(UrlModuleLoader):
     def load_module(self, fullname):
         mod = super().load_module(fullname)
-        mod.__path__ = [ self._baseurl ]
+        mod.__path__ = [self._baseurl]
         mod.__package__ = fullname
 
     def get_filename(self, fullname):
@@ -245,8 +252,11 @@ class UrlPackageLoader(UrlModuleLoader):
     def is_package(self, fullname):
         return True
 
+
 # Utility functions for installing/uninstalling the loader
-_installed_meta_cache = { }
+_installed_meta_cache = {}
+
+
 def install_meta(address):
     if address not in _installed_meta_cache:
         finder = UrlMetaFinder(address)
@@ -254,11 +264,13 @@ def install_meta(address):
         sys.meta_path.append(finder)
         log.debug('%r installed on sys.meta_path', finder)
 
+
 def remove_meta(address):
     if address in _installed_meta_cache:
         finder = _installed_meta_cache.pop(address)
         sys.meta_path.remove(finder)
         log.debug('%r removed from sys.meta_path', finder)
+
 
 # 下面是一个交互会话，演示了如何使用前面的代码：
 
@@ -273,6 +285,8 @@ import spam
 import grok.blah
 print(grok.blah.__file__)
 """
+
+
 # 这个特殊的方案会安装一个特别的查找器 UrlMetaFinder 实例， 作为 sys.meta_path 中最后的实体。 当模块被导入时，会依据
 # sys.meta_path 中的查找器定位模块。 在这个例子中，UrlMetaFinder 实例是最后一个查找器方案，
 # 当模块在任何一个普通地方都找不到的时候就触发它。
@@ -303,7 +317,7 @@ class UrlPathFinder(importlib.abc.PathEntryFinder):
         basename = parts[-1]
         # Check link cache
         if self._links is None:
-            self._links = [] # See discussion
+            self._links = []  # See discussion
             self._links = _get_links(self._baseurl)
 
         # Check if it's a package
@@ -333,8 +347,11 @@ class UrlPathFinder(importlib.abc.PathEntryFinder):
         log.debug('invalidating link cache')
         self._links = None
 
+
 # Check path to see if it looks like a URL
 _url_path_cache = {}
+
+
 def handle_url(path):
     if path.startswith(('http://', 'https://')):
         log.debug('Handle path? %s. [Yes]', path)
@@ -347,45 +364,285 @@ def handle_url(path):
     else:
         log.debug('Handle path? %s. [No]', path)
 
+
 def install_path_hook():
     sys.path_hooks.append(handle_url)
     sys.path_importer_cache.clear()
     log.debug('Installing handle_url')
+
 
 def remove_path_hook():
     sys.path_hooks.remove(handle_url)
     sys.path_importer_cache.clear()
     log.debug('Removing handle_url')
 
+
 # 要使用这个路径查找器，你只需要在 sys.path 中加入URL链接。例如：
 
 """
->>> # Initial import fails
->>> import fib
-Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-ImportError: No module named 'fib'
+# Initial import fails
+import fib
 
->>> # Install the path hook
->>> import urlimport
->>> urlimport.install_path_hook()
+# Install the path hook
+import urlimport
 
->>> # Imports still fail (not on path)
->>> import fib
-Traceback (most recent call last):
-    File "<stdin>", line 1, in <module>
-ImportError: No module named 'fib'
+# Imports still fail (not on path)
+import fib
 
->>> # Add an entry to sys.path and watch it work
->>> import sys
->>> sys.path.append('http://localhost:15000')
->>> import fib
-I'm fib
->>> import grok.blah
-I'm grok.__init__
-I'm grok.blah
->>> grok.blah.__file__
-'http://localhost:15000/grok/blah.py'
->>>
+# Add an entry to sys.path and watch it work
+import sys
+sys.path.append('http://localhost:15000')
+import fib
+import grok.blah
+grok.blah.__file__
 """
 
+# 关键点就是 handle_url() 函数，它被添加到了 sys.path_hooks 变量中。 当 sys.path
+# 的实体被处理时，会调用
+# sys.path_hooks 中的函数。 如果任何一个函数返回了一个查找器对象，那么这个对象就被用来为
+# sys.path 实体加载模块。
+#
+# 远程模块加载跟其他的加载使用方法几乎是一样的。例如：
+
+print(fib)
+print(fib.__name__)
+print(fib.__file__)
+
+import inspect
+
+print(inspect.getsource(fib))
+
+# 在详细讨论之前，有点要强调的是，Python的模块、包和导入机制是整个语言中最复杂的部分，
+# 即使经验丰富的Python程序员也很少能精通它们。
+# 我在这里推荐一些值的去读的文档和书籍，包括 importlib module 和 PEP 302.
+# 文档内容在这里不会被重复提到，不过我在这里会讨论一些最重要的部分。
+#
+# 首先，如果你想创建一个新的模块对象，使用 imp.new_module() 函数：
+
+import imp
+
+m = imp.new_module('spam')
+print(m)
+print(m.__name__)
+
+# 模块对象通常有一些期望属性，包括 __file__ （运行模块加载语句的文件名） 和 __package__ (包名)。
+#
+# 其次，模块会被解释器缓存起来。模块缓存可以在字典 sys.modules 中被找到。 因为有了这个缓存机制，
+# 通常可以将缓存和模块的创建通过一个步骤完成：
+import sys
+import imp
+
+m = sys.modules.setdefault('spam', imp.new_module('spam'))
+print(m)
+
+# 如果给定模块已经存在那么就会直接获得已经被创建过的模块，例如：
+import math
+
+m = sys.modules.setdefault('math', imp.new_module('math'))
+print(m)
+print(m.sin(2))
+print(m.cos(2))
+
+# 由于创建模块很简单，很容易编写简单函数比如第一部分的 load_module() 函数。 这个方案的一个缺点
+# 是很难处理复杂情况比如包的导入。
+# 为了处理一个包，你要重新实现普通import语句的底层逻辑（比如检查目录，查找__init__.py文件，
+# 执行那些文件，设置路径等）。这个复杂性就是为什么最好直接扩展import语句而不是自定义函数的一个原因。
+#
+# 扩展import语句很简单，但是会有很多移动操作。 最高层上，导入操作被一个位于sys.meta_path列表中
+# 的“元路径”查找器处理。
+# 如果你输出它的值，会看到下面这样：
+
+from pprint import pprint
+
+pprint(sys.meta_path)
+
+
+# 当执行一个语句比如 import fib 时，解释器会遍历sys.mata_path中的查找器对象，
+# 调用它们的 find_module() 方法定位正确的模块加载器。 可以通过实验来看看：
+
+class Finder:
+    def find_module(self, fullname, path):
+        print('Looking for', fullname, path)
+        return None
+
+
+import sys
+import math
+import types
+import threading
+
+# 注意看 find_module() 方法是怎样在每一个导入就被触发的。 这个方法中的path参数的作用是处理包。
+# 多个包被导入，就是一个可在包的 __path__ 属性中找到的路径列表。 要找到包的子组件就要检查这些路径。
+# 比如注意对于 xml.etree 和 xml.etree.ElementTree 的路径配置：
+
+
+import xml.etree.ElementTree
+
+# 在 sys.meta_path 上查找器的位置很重要，将它从队头移到队尾，然后再试试导入看：
+del sys.meta_path[0]
+sys.meta_path.append(Finder())
+import urllib.request
+import datetime
+
+# 现在你看不到任何输出了，因为导入被sys.meta_path中的其他实体处理。 这时候，你只有在导入不存
+# 在模块的时候才能看到它被触发：
+"""
+import fib
+import xml.superfast
+"""
+
+# 你之前安装过一个捕获未知模块的查找器，这个是 UrlMetaFinder 类的关键。 一个 UrlMetaFinder
+# 实例被添加到
+# sys.meta_path 的末尾，作为最后一个查找器方案。 如果被请求的模块名不能定位，就会被这个查找器
+# 处理掉。
+# 处理包的时候需要注意，在path参数中指定的值需要被检查，看它是否以查找器中注册的URL开头。 如果
+# 不是，该子模块必须归属于其他查找器并被忽略掉。
+#
+# 对于包的其他处理可在 UrlPackageLoader 类中被找到。 这个类不会导入包名，而是去加载对应的
+# __init__.py 文件。
+# 它也会设置模块的 __path__ 属性，这一步很重要， 因为在加载包的子模块时这个值会被传给后面的
+# find_module() 调用。
+# 基于路径的导入钩子是这些思想的一个扩展，但是采用了另外的方法。 我们都知道，sys.path 是一个
+# Python查找模块的目录列表，例如：
+
+from pprint import pprint
+import sys
+
+pprint(sys.path)
+
+# 在 sys.path 中的每一个实体都会被额外的绑定到一个查找器对象上。 你可以通过查看
+# sys.path_importer_cache 去看下这些查找器：
+pprint(sys.path_importer_cache)
+
+
+# sys.path_importer_cache 比 sys.path 会更大点， 因为它会为所有被加载代码的目录记录它们的查找器。
+# 这包括包的子目录，这些通常在 sys.path 中是不存在的。
+#
+# 要执行 import fib ，会顺序检查 sys.path 中的目录。 对于每个目录，名称“fib”会被传给相应的
+# sys.path_importer_cache 中的查找器。 这个可以让你创建自己的查找器并在缓存中放入一个实体。试试这个：
+class Finder:
+    def find_loader(self, name):
+        print('Looking for', name)
+        return (None, [])
+
+
+import sys
+
+# Add a "debug" entry to the importer cache
+sys.path_importer_cache['debug'] = Finder()
+# Add a "debug" directory to sys.path
+sys.path.insert(0, 'debug')
+import threading
+
+# 在这里，你可以为名字“debug”创建一个新的缓存实体并将它设置成 sys.path 上的第一个。 在所有接下
+# 来的导入中，你会看到你的查找器被触发了。
+# 不过，由于它返回 (None, [])，那么处理进程会继续处理下一个实体。
+#
+# sys.path_importer_cache 的使用被一个存储在 sys.path_hooks 中的函数列表控制。 试试下面
+# 的例子，它会清除缓存并给
+# sys.path_hooks 添加一个新的路径检查函数
+sys.path_importer_cache.clear()
+
+
+def check_path(path):
+    print('Checking', path)
+    raise ImportError()
+
+
+sys.path_hooks.insert(0, check_path)
+import fib
+
+
+# 正如你所见，check_path() 函数被每个 sys.path 中的实体调用。 不顾，由于抛出了 ImportError 异常，
+# 啥都不会发生了（仅仅将检查转移到sys.path_hooks的下一个函数）。
+#
+# 知道了怎样sys.path是怎样被处理的，你就能构建一个自定义路径检查函数来查找文件名，不然URL。例如：
+
+def check_url(path):
+    if path.startswith('http://'):
+        return Finder()
+    else:
+        raise ImportError()
+
+
+sys.path.append('http://localhost:15000')
+sys.path_hooks[0] = check_url
+import fib
+
+sys.path_importer_cache['http://localhost:15000']
+
+# 这就是本节最后部分的关键点。事实上，一个用来在sys.path中查找URL的自定义路径检查函数已经构建完毕。 当它们被碰到的时候，一个新的
+# UrlPathFinder 实例被创建并被放入 sys.path_importer_cache. 之后，所有需要检查 sys.path
+# 的导入语句都会使用你的自定义查找器。
+#
+# 基于路径导入的包处理稍微有点复杂，并且跟 find_loader() 方法返回值有关。 对于简单模块，
+# find_loader() 返回一个元组(loader, None)， 其中的loader是一个用于导入模块的加载器实例。
+#
+# 对于一个普通的包，find_loader() 返回一个元组(loader, path)，
+# 其中的loader是一个用于导入包（并执行__init__.py）的加载器实例， path是一个会初始化包
+# 的 __path__
+# 属性的目录列表。
+# 例如，如果基础URL是 http://localhost:15000 并且一个用户执行 import grok ,
+# 那么 find_loader()
+# 返回的path就会是 [ ‘http://localhost:15000/grok’ ]
+#
+# find_loader() 还要能处理一个命名空间包。 一个命名空间包中有一个合法的包目录名，
+# 但是不存在__init__.py文件。
+# 这样的话，find_loader() 必须返回一个元组(None, path)，
+# path是一个目录列表，由它来构建包的定义有__init__.py文件的__path__属性。
+# 对于这种情况，导入机制会继续前行去检查sys.path中的目录。 如果找到了命名空间包，所有的结果路径
+# 被加到一起来构建最终的命名空间包。
+# 关于命名空间包的更多信息请参考10.5小节。
+#
+# 所有的包都包含了一个内部路径设置，可以在__path__属性中看到，例如：
+
+
+import xml.etree.ElementTree
+
+xml.__path__
+xml.etree.__path__
+
+# 之前提到，__path__的设置是通过 find_loader() 方法返回值控制的。
+# 不过，__path__接下来也被sys.path_hooks中的函数处理。 因此，但包的子组件被加载后，
+# 位于__path__中的实体会被
+# handle_url() 函数检查。 这会导致新的 UrlPathFinder 实例被创建并且被加入到
+# sys.path_importer_cache 中。
+#
+# 还有个难点就是 handle_url() 函数以及它跟内部使用的 _get_links() 函数之间的交互。
+# 如果你的查找器实现需要使用到其他模块（比如urllib.request）， 有可能这些模块会在查找器操作期
+# 间进行更多的导入。 它可以导致
+# handle_url() 和其他查找器部分陷入一种递归循环状态。 为了解释这种可能性，实现中有一个被创建的
+# 查找器缓存（每一个URL一个）。
+# 它可以避免创建重复查找器的问题。 另外，下面的代码片段可以确保查找器不会在初始化链接集合的时候响
+# 应任何导入请求：
+
+
+# Check link cache
+if self._links is None:
+    self._links = []  # See discussion
+    self._links = _get_links(self._baseurl)
+
+# 最后，查找器的 invalidate_caches() 方法是一个工具方法，用来清理内部缓存。 这个方法再用户调用
+# importlib.invalidate_caches() 的时候被触发。 如果你想让URL导入者重新读取链接列表的话可
+# 以使用它。
+#
+# 对比下两种方案（修改sys.meta_path或使用一个路径钩子）。 使用sys.meta_path的导入者可以按照
+# 自己的需要自由处理模块。
+# 例如，它们可以从数据库中导入或以不同于一般模块/包处理方式导入。 这种自由同样意味着导入者需要自己
+# 进行内部的一些管理。
+# 另外，基于路径的钩子只是适用于对sys.path的处理。 通过这种扩展加载的模块跟普通方式加载的特性是
+# 一样的。
+#
+# 如果到现在为止你还是不是很明白，那么可以通过增加一些日志打印来测试下本节。像下面这样：
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+import urlimport
+
+urlimport.install_path_hook()
+import fib
+import sys
+
+sys.path.append('http://localhost:15000')
+import fib
