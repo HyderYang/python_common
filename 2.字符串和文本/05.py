@@ -13,7 +13,7 @@ print('*' * 50)
 
 # 对于复杂的模式 应该使用 re 模式 sub()函数
 
-text = 'Today is 11/27/2012. PyCon starts 3/13/2013.'
+text = 'Today is 11.网络与Web编程/27/2012. PyCon starts 3/13/2013.'
 import re
 
 new_text = re.sub(r'(\d+)/(\d+)/(\d+)', r'\3-\1-\2', text)

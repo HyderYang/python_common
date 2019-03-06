@@ -40,9 +40,9 @@ def parse_and_remove(filename, path):
 <response>
     <row>
         <row ...>
-            <creation_date>2012-11-18T00:00:00</creation_date>
+            <creation_date>2012-11.网络与Web编程-18T00:00:00</creation_date>
             <status>Completed</status>
-            <completion_date>2012-11-18T00:00:00</completion_date>
+            <completion_date>2012-11.网络与Web编程-18T00:00:00</completion_date>
             <service_request_number>12-01906549</service_request_number>
             <type_of_service_request>Pot Hole in Street</type_of_service_request>
             <current_activity>Final Outcome</current_activity>
@@ -60,9 +60,9 @@ def parse_and_remove(filename, path):
             longitude="-87.69053684711305" />
         </row>
         <row ...>
-            <creation_date>2012-11-18T00:00:00</creation_date>
+            <creation_date>2012-11.网络与Web编程-18T00:00:00</creation_date>
             <status>Completed</status>
-            <completion_date>2012-11-18T00:00:00</completion_date>
+            <completion_date>2012-11.网络与Web编程-18T00:00:00</completion_date>
             <service_request_number>12-01906695</service_request_number>
             <type_of_service_request>Pot Hole in Street</type_of_service_request>
             <current_activity>Final Outcome</current_activity>

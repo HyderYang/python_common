@@ -17,7 +17,7 @@ print('*' * 50)
 # 复杂的匹配需要 re模块
 
 
-text1 = '11/27/2012'
+text1 = '11.网络与Web编程/27/2012'
 text2 = 'Nov 27, 2012'
 
 import re
@@ -55,7 +55,7 @@ print('*' * 50)
 # match 总是从字符串开始匹配 如果想要查找字符串任意部分的模板
 # 可以使用findall 方法
 
-text = 'Today is 11/27/2012. PyCon starts 3/13/2013.'
+text = 'Today is 11.网络与Web编程/27/2012. PyCon starts 3/13/2013.'
 print(datepat.findall(text))
 
 
