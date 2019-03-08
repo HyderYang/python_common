@@ -8,7 +8,7 @@
 import cgi
 from urllib.request import urlopen
 
-from resty import PathDispatcher
+# from resty import PathDispatcher
 from wsgiref.simple_server import make_server
 import time
 
@@ -162,7 +162,7 @@ def wsgi_app(environ, start_response):
 class WSGIApplication:
     def __init__(self):
         ...
-    def __call__(self, environ, start_response)
+    def __call__(self, environ, start_response):
        ...
 
 
