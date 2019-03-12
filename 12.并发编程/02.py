@@ -11,6 +11,7 @@
 # 的启动：
 from threading import Thread, Event
 import time
+import threading
 
 
 # Code to execute in an independent thread
@@ -35,6 +36,7 @@ t.start()
 started_evt.wait()
 print('countdown is running')
 
+
 # 当你执行这段代码，“countdown is running” 总是显示在 “countdown starting” 之后显示。
 # 这是由于使用 event 来协调线程，使得主线程要等到 countdown() 函数输出启动信息后，才能继续执行。
 
@@ -44,10 +46,6 @@ print('countdown is running')
 # 对象的代码会在线程再次等待这个 event 对象之前执行）。如果一个线程需要不停地重复使用 event
 # 对象，你最好使用 Condition 对象来代替。下面的代码使用 Condition 对象实现了一个周期定时器，
 # 每当定时器超时的时候，其他线程都可以监测到：
-import threading
-import time
-
-
 class PeriodicTimer:
     def __init__(self, interval):
         self._interval = interval
@@ -61,9 +59,9 @@ class PeriodicTimer:
         t.start()
 
     def run(self):
-        '''
+        """
         Run the timer and notify waiting threads after each interval
-        '''
+        """
         while True:
             time.sleep(self._interval)
             with self._cv:
@@ -71,9 +69,9 @@ class PeriodicTimer:
                 self._cv.notify_all()
 
     def wait_for_tick(self):
-        '''
+        """
         Wait for the next tick of the timer
-        '''
+        """
         with self._cv:
             last_flag = self._flag
             while last_flag == self._flag:
