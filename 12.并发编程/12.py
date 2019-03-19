@@ -345,9 +345,9 @@ while True:
     try:
         data = f.send(result)
         result = ...
-        do
-        some
-        calculation...
+        # do
+        # some
+        # calculation...
     except StopIteration:
         break
 
