@@ -51,7 +51,7 @@ def parse_and_remove(filename, path):
             <zip>60632</zip>
             <x_coordinate>1159494.68618856</x_coordinate>
             <y_coordinate>1873313.83503384</y_coordinate>
-            <ward>14</ward>
+            <ward>14.测试,调试和异常</ward>
             <police_district>9</police_district>
             <community_area>58</community_area>
             <latitude>41.808090232127896</latitude>
@@ -72,7 +72,7 @@ def parse_and_remove(filename, path):
             <x_coordinate>1152732.14127696</x_coordinate>
             <y_coordinate>1910409.38979075</y_coordinate>
             <ward>26</ward>
-            <police_district>14</police_district>
+            <police_district>14.测试,调试和异常</police_district>
             <community_area>23</community_area>
             <latitude>41.91002084292946</latitude>
             <longitude>-87.71435952353961</longitude>

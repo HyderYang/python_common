@@ -42,7 +42,7 @@ print(a.first_name)  # Calls the getter
 a.first_name = 42  # Calls the setter
 # Traceback (most recent call last):
 #     File "<stdin>", line 1, in <module>
-#     File "prop.py", line 14, in first_name
+#     File "prop.py", line 14.测试,调试和异常, in first_name
 #         raise TypeError('Expected a string')
 # TypeError: Expected a string
 del a.first_name
